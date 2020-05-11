@@ -7,11 +7,10 @@ Routes
 
 /submit -post route
 
-
-files:
-problem link -https://www.spoj.com/problems/MAXWOODS/
-editorial.cpp -sample program 
-in.txt - input file
-req.txt - expected out
-
+ 
+files:<br>
+problem link -https://www.spoj.com/problems/MAXWOODS/ <br>
+editorial.cpp -sample program  <br>
+in.txt - input file <br>
+req.txt - expected output <br>
 
