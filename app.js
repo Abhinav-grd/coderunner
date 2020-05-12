@@ -6,6 +6,9 @@ var { exec } = require("child_process");
 var async = require("async");
 var bodyParser = require("body-parser");
 
+const PORT = process.env.PORT || '8080';
+const HOST = process.env.HOST ||'0.0.0.0';
+
 app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -17,14 +20,15 @@ app.use(
 );
 
 app.get("/", function (req, res) {
+  console.log("get req ");
   res.render("submit-form");
 });
 var code;
 var fileName='program';
 app.post("/submit", function (req, res) {
   code = req.body.code;
- 
-  // console.log(code);
+  
+   console.log("post req ");
   async.waterfall([createfile, compile, execute, test], function (err, result) {
      exec("rm -rf out.txt program.out program.cpp", function () {
       res.send(result);
@@ -78,6 +82,6 @@ function test(callback) {
   });
 }
 
-app.listen("3000", "127.0.0.1", function () {
+app.listen(PORT, HOST, function () {
   console.log(" coderunner Started!!....");
 });
