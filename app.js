@@ -1,7 +1,6 @@
 var express = require("express");
 var app = express();
 var fs = require("fs");
-var path = require("path");
 var { exec } = require("child_process");
 var async = require("async");
 var bodyParser = require("body-parser");
@@ -14,6 +13,10 @@ app.use(
     extended: true,
   })
 );
+
+/* ******************************* */
+//     DB COMMUNICATION SETUP
+/* ******************************* */
 
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
@@ -33,40 +36,44 @@ const textSchema = new Schema({
 const Text = mongoose.model('Text', textSchema);
 
 
-app.get("/", function (req, res) {
-  res.send('HIHIHIHI');
-});
+
+/* ******************************* */
+//         MAIN CODE
+/* ******************************* */
 
 var files = {};
 app.post("/judge", function (req, res) {
-  files = { code: 'q'+req.body.codeid+'.cpp', exe: 'q'+req.body.codeid+'.out',in: 'q'+req.body.inpid+'.txt', check: 'q'+req.body.outid+'.txt' ,out:'q'+req.body.codeid+"_out.txt"};
+  files = { code: './tmp/q' + req.body.codeid + '.cpp', exe: './tmp/q' + req.body.codeid + '.out', in: './tmp/q' + req.body.inpid + '.txt', check: './tmp/q' + req.body.outid + '.txt', out: './tmp/q' + req.body.codeid + "_out.txt" };
   // console.log(files);
-  async.series([createfiles, compile, execute, test], function (err, type) {
+  async.waterfall([createfiles, compile, execute, test], function (err, type) {
     if (err)
-      result = err;
-    for (var file in files) {
-      exec("rm -rf "+file, function (err) {
-        console.log(err);
+      type = err;
+    Object.values(files).forEach((file) => {
+      console.log("deleting "+file);
+      exec("rm -rf " + file, function (err) {
+        if (err)
+          console.log(`deletion issue {err}`);
       });
-    }
-    res.send(result);
+    });
+    res.send(type);
   });
 });
 
 function createfiles(callback) {
+  console.log("Downloading Files....");
   async.parallel([
-    createfile.bind(null,files.code),
-    createfile.bind(null,files.in),
-    createfile.bind(null,files.check),
-  ],function(err){
-    if(err)
-      return callback(err);
-    return callback(null);
-  }); 
-  }
+    createfile.bind(null, files.code),
+    createfile.bind(null, files.in),
+    createfile.bind(null, files.check),
+  ], function (err) {
+    if (err)
+      return callback(err, 'System_issue');
+    callback(null);
+  });
+}
 
 function compile(callback) {
-
+  console.log("compling Code....");
   var compileProcess =
     "g++ --std=c++14 -o " + files.exe + " " + files.code;
   exec(compileProcess, function (err, stdout, stderr) {
@@ -74,38 +81,40 @@ function compile(callback) {
       // console.error(`exec error: ${err}`);
       return callback(err, "CE");
     }
-    return callback(null);
+    callback(null);
   });
 }
 
 function execute(callback) {
-  var execProcess = "./" + files.exe + " < "+files.in+" > "+files.out;
+  console.log("executing....");
+  var execProcess = files.exe + " < " + files.in + " > " + files.out;
   exec(execProcess, function (err, stdout, stderr) {
     if (err) {
       // console.error(`exec error: ${err}`);
-      callback(err, "RE");
-      return;
+      return callback(err, "RE");
     }
     callback(null);
   });
 }
 
 function test(callback) {
-  exec("diff -w "+files.out+" "+files.check, function (err, stdout, stderr) {
-    if (stdout != "") {
-      callback(null, "WA");
-      return;
+  console.log("testing....");
+  exec("diff -w " + files.out + " " + files.check, function (err, stdout, stderr) {
+    if (stdout) {
+      return callback(null, "WA");
     }
     callback(null, "AC");
   });
 }
 
-function createfile(filename){
-  var fileid=filename.substr(1).slice(0,-4);
-  console.log(fileid);
-  Text.findById(fileid).then((file)=>{
-    fs.writeFile("./tmp/"+filename,file.data,function(err){
-      console.log(err);
+function createfile(filename, callback) {
+  var fileid = filename.substr(7).slice(0, -4);
+  Text.findById(fileid).then((file) => {
+    // console.log(file);
+    fs.writeFile(filename, file.data, function (err) {
+      if (err)
+        console.log(err);
+      callback(null);
     });
   });
 }
