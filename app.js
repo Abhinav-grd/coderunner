@@ -8,11 +8,8 @@ var bodyParser = require("body-parser");
 const PORT = process.env.PORT || '8080';
 const HOST = process.env.HOST || '0.0.0.0';
 
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-);
+app.use(bodyParser.urlencoded({extended: true,}));
+app.use(bodyParser.json());
 
 /* ******************************* */
 //     DB COMMUNICATION SETUP
@@ -44,7 +41,7 @@ const Text = mongoose.model('Text', textSchema);
 var files = {};
 app.post("/judge", function (req, res) {
   files = { code: './tmp/q' + req.body.codeid + '.cpp', exe: './tmp/q' + req.body.codeid + '.out', in: './tmp/q' + req.body.inpid + '.txt', check: './tmp/q' + req.body.outid + '.txt', out: './tmp/q' + req.body.codeid + "_out.txt" };
-  // console.log(files);
+  console.log(files);
   async.waterfall([createfiles, compile, execute, test], function (err, type) {
     if (err)
       type = err;
