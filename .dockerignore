@@ -1,2 +1,7 @@
 node_modules
-npm-debug.log
+.gitignore
+editorial.cpp
+in.txt
+README.md
+req.txt
+

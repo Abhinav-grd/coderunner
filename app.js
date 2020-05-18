@@ -38,6 +38,10 @@ const Text = mongoose.model('Text', textSchema);
 //         MAIN CODE
 /* ******************************* */
 
+app.get("/", function (req, res) {
+    res.send("Ya I am here");
+});
+
 var files = {};
 app.post("/judge", function (req, res) {
   files = { code: './tmp/q' + req.body.codeid + '.cpp', exe: './tmp/q' + req.body.codeid + '.out', in: './tmp/q' + req.body.inpid + '.txt', check: './tmp/q' + req.body.outid + '.txt', out: './tmp/q' + req.body.codeid + "_out.txt" };
