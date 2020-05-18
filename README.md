@@ -18,5 +18,5 @@ req.txt - expected output <br>
 
 using docker 
 
-1. docker build -t coderunner . <br>
-2. docker run -p 8080:8080 -d coderunner . <br>
+1. docker build -t coderunner <strong>. </strong>      (the dot is important) <br>
+2. docker run -p 8080:8080 -d coderunner  <br>
